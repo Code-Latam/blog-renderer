@@ -1,6 +1,8 @@
 import { Article, ApiResponse, ClientInfo } from './types';
 
-const API_BASE = process.env.API_BASE_URL || 'https://api.meetingmaker.tech';
+const API_BASE = process.env.VERCEL_ENV === 'production' 
+  ? '/api-proxy'
+  : 'https://api.meetingmaker.tech';
 const SERVICE_API_KEY = process.env.SERVICE_API_KEY;
 
 export async function getClientByDomain(host: string): Promise<ClientInfo | null> {
