@@ -15,10 +15,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get client by domain
+  // ✅ Check if first path segment looks like a MongoDB ObjectId (24 hex chars)
+  const firstSegment = pathname.split('/')[1];
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(firstSegment);
+  
+  if (isObjectId && firstSegment) {
+    // Direct client ID in URL path - use it directly
+    console.log(`[Middleware] Using client ID from path: ${firstSegment}`);
+    // Already in the correct format, just continue
+    return NextResponse.next();
+  }
+
+  // Otherwise, try to get client by domain
   const client = await getClientByDomain(host);
 
   if (!client) {
+    console.log(`[Middleware] No client found for domain: ${host}`);
     return new Response('Blog not found', { status: 404 });
   }
 
