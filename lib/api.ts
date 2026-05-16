@@ -5,9 +5,7 @@ console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
 console.log('API_BASE calculated as:', process.env.VERCEL_ENV === 'production' ? '/api-proxy' : 'https://api.meetingmaker.tech');
 
 // Use proxy in production, direct in development
-const API_BASE = process.env.VERCEL_ENV === 'production' 
-  ? '/api-proxy'
-  : 'https://api.meetingmaker.tech';
+const API_BASE = '/api-proxy';
 
 const SERVICE_API_KEY = process.env.SERVICE_API_KEY;
 
