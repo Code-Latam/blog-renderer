@@ -5,6 +5,8 @@ import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
+export const runtime = 'edge';
+
 export const revalidate = 60;
 
 interface PageProps {
