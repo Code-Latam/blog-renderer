@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 60;
+export const dynamic = 'force-dynamic'; // ✅ Add this to force server-side rendering
 
 interface PageProps {
   params: {
@@ -18,6 +19,13 @@ interface PageProps {
 export default async function BlogHome({ params, searchParams }: PageProps) {
   const clientId = params.clientId;
   const page = parseInt(searchParams.page || '1');
+
+ // ✅ Add console logs (these will appear in Vercel function logs)
+  console.log('[BlogHome] Starting render for clientId:', clientId);
+  console.log('[BlogHome] API_BASE_URL:', process.env.API_BASE_URL);
+  console.log('[BlogHome] SERVICE_API_KEY exists:', !!process.env.SERVICE_API_KEY);
+
+
   const { articles, pagination, settings } = await fetchArticles(clientId, page);
 
   if (!articles && page === 1) {
