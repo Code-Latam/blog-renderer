@@ -1,8 +1,14 @@
 import { Article, ApiResponse, ClientInfo } from './types';
 
+
+console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
+console.log('API_BASE calculated as:', process.env.VERCEL_ENV === 'production' ? '/api-proxy' : 'https://api.meetingmaker.tech');
+
+// Use proxy in production, direct in development
 const API_BASE = process.env.VERCEL_ENV === 'production' 
   ? '/api-proxy'
   : 'https://api.meetingmaker.tech';
+
 const SERVICE_API_KEY = process.env.SERVICE_API_KEY;
 
 export async function getClientByDomain(host: string): Promise<ClientInfo | null> {
@@ -27,15 +33,17 @@ export async function getClientByDomain(host: string): Promise<ClientInfo | null
 
 export async function fetchArticles(clientId: string, page: number = 1, limit: number = 10): Promise<ApiResponse> {
   try {
-    const response = await fetch(
-      `${API_BASE}/blog/ssr/articles?clientId=${clientId}&page=${page}&limit=${limit}`,
-      {
-        headers: {
-          'X-Service-API-Key': SERVICE_API_KEY!,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const url = `${API_BASE}/blog/ssr/articles?clientId=${clientId}&page=${page}&limit=${limit}`;
+    console.log('[fetchArticles] URL:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Service-API-Key': SERVICE_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('[fetchArticles] Response status:', response.status);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch articles: ${response.status}`);
@@ -55,15 +63,15 @@ export async function fetchArticles(clientId: string, page: number = 1, limit: n
 
 export async function fetchArticle(clientId: string, slug: string): Promise<Article | null> {
   try {
-    const response = await fetch(
-      `${API_BASE}/blog/ssr/articles?clientId=${clientId}&slug=${slug}`,
-      {
-        headers: {
-          'X-Service-API-Key': SERVICE_API_KEY!,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const url = `${API_BASE}/blog/ssr/articles?clientId=${clientId}&slug=${slug}`;
+    console.log('[fetchArticle] URL:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Service-API-Key': SERVICE_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) return null;
     const data = await response.json();
