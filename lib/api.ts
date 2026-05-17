@@ -1,13 +1,9 @@
 import { Article, ApiResponse, ClientInfo } from './types';
 
 
-console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
-console.log('API_BASE calculated as:', process.env.VERCEL_ENV === 'production' ? '/api-proxy' : 'https://api.meetingmaker.tech');
-
-// Use proxy in production, direct in development
-const API_BASE = '/api-proxy';
-
+const API_BASE = process.env.API_BASE_URL || 'https://api.meetingmaker.tech';
 const SERVICE_API_KEY = process.env.SERVICE_API_KEY;
+
 
 export async function getClientByDomain(host: string): Promise<ClientInfo | null> {
   try {
