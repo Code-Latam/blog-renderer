@@ -3,7 +3,6 @@ import { ArticleCard } from '@/components/ArticleCard';
 import { BlogLayout } from '@/components/BlogLayout';
 import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
-export const runtime = 'edge';
 
 export const revalidate = 60;
 export const dynamic = 'force-dynamic'; // ✅ Add this to force server-side rendering
