@@ -25,6 +25,28 @@ export async function getClientByDomain(host: string): Promise<ClientInfo | null
   }
 }
 
+
+// ✅ NEW: Get client by ID (needed for sitemap and robots.txt)
+export async function getClientById(clientId: string): Promise<any | null> {
+  try {
+    const response = await fetch(
+      `${API_BASE}/blog/ssr/client/${clientId}/settings`,
+      {
+        headers: {
+          'X-Service-API-Key': SERVICE_API_KEY!,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) return null;
+    return response.json();
+  } catch (error) {
+    console.error(`Failed to fetch client ${clientId}:`, error);
+    return null;
+  }
+}
+
 export async function fetchArticles(clientId: string, page: number = 1, limit: number = 10): Promise<ApiResponse> {
   try {
     const url = `${API_BASE}/blog/ssr/articles?clientId=${clientId}&page=${page}&limit=${limit}`;
