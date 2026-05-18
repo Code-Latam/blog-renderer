@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const url = request.nextUrl.toString();
   
   console.log('[Debug] Host:', host);
-  console.log('[Debug] Full URL:', url);
+  console.log('[Debugs] Full URL:', url);
   
   const client = await getClientByDomain(host);
   
