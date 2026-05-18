@@ -5,13 +5,19 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
 
-  // Skip internal Next.js routes and static files
+  // Skip internal Next.js routes and static files (but allow .xml files like sitemap.xml)
   if (
     pathname.startsWith('/_next') || 
     pathname.startsWith('/api') || 
-    pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
+    return NextResponse.next();
+  }
+
+  // ✅ Allow .xml files (sitemap.xml) to be processed by middleware
+  // Skip other static files with extensions (.png, .jpg, .css, .js, etc.)
+  const hasExtension = /\.(png|jpg|jpeg|gif|webp|svg|css|js|json|woff|woff2|ttf|eot)$/i.test(pathname);
+  if (hasExtension) {
     return NextResponse.next();
   }
 
@@ -37,6 +43,7 @@ export async function middleware(request: NextRequest) {
   // Rewrite to client-specific route
   const url = request.nextUrl.clone();
   url.pathname = `/${client.clientId}${pathname}`;
+  console.log(`[Middleware] Rewriting ${pathname} to ${url.pathname}`);
 
   return NextResponse.rewrite(url);
 }
