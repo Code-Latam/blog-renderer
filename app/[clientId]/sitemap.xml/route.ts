@@ -12,74 +12,60 @@ export async function GET(
   console.log('[Sitemap] Starting for clientId:', clientId);
 
   try {
-    // Get client info to determine the base URL
+    // Get client info
     const client = await getClientById(clientId);
-    console.log('[Sitemap] getClientById result:', client ? 'Found' : 'Not found');
-    console.log('[Sitemap] client.blog:', JSON.stringify(client?.blog, null, 2));
-
+    
     if (!client || !client.blog?.enabled) {
-      console.log('[Sitemap] Client not found or blog not enabled');
+      console.log('[Sitemap] Client not found');
       return new NextResponse('Client not found', { status: 404 });
     }
 
-    // Determine the base URL for this client's blog
-    let baseUrl: string;
-    if (client.blog?.ssrCustomDomain) {
-      baseUrl = `https://${client.blog.ssrCustomDomain}`;
-      console.log('[Sitemap] Using ssrCustomDomain:', baseUrl);
-    } else if (client.blog?.ssrSubdomain) {
-      baseUrl = `https://${client.blog.ssrSubdomain}.meetingmaker.tech`;
-      console.log('[Sitemap] Using ssrSubdomain:', baseUrl);
-    } else {
-      console.log('[Sitemap] No base URL configured');
-      return new NextResponse('Blog URL not configured', { status: 400 });
+    // Get the base URL from the request host
+    const host = request.headers.get('host') || '';
+    const baseUrl = `https://${host}`;
+    console.log('[Sitemap] Base URL:', baseUrl);
+
+    // Fetch articles
+    const { articles } = await fetchArticles(clientId, 1, 1000);
+    console.log('[Sitemap] Articles found:', articles.length);
+
+    // Build XML
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    
+    // Add homepage
+    xml += '  <url>\n';
+    xml += `    <loc>${baseUrl}</loc>\n`;
+    xml += `    <lastmod>${new Date().toISOString()}</lastmod>\n`;
+    xml += '    <changefreq>daily</changefreq>\n';
+    xml += '    <priority>1.0</priority>\n';
+    xml += '  </url>\n';
+    
+    // Add articles - using only publishedAt
+    for (const article of articles) {
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/${article.slug}</loc>\n`;
+      // Use publishedAt only, or fallback to current date if missing
+      const articleDate = article.publishedAt ? new Date(article.publishedAt) : new Date();
+      xml += `    <lastmod>${articleDate.toISOString()}</lastmod>\n`;
+      xml += '    <changefreq>weekly</changefreq>\n';
+      xml += '    <priority>0.7</priority>\n';
+      xml += '  </url>\n';
     }
+    
+    xml += '</urlset>';
 
-    // Fetch all published articles for this client
-    const { articles, total } = await fetchArticles(clientId, 1, 1000);
-    console.log('[Sitemap] Articles fetched:', articles.length);
-    console.log('[Sitemap] Total articles:', total);
+    console.log('[Sitemap] Generated XML length:', xml.length);
+    console.log('[Sitemap] First article slug:', articles[0]?.slug);
 
-    // Build the sitemap XML
-    const urls = [
-      {
-        loc: baseUrl,
-        lastmod: new Date().toISOString(),
-        changefreq: 'daily',
-        priority: 1.0,
-      },
-      ...articles.map((article: any) => ({
-        loc: `${baseUrl}/${article.slug}`,
-        lastmod: new Date(article.updatedAt || article.publishedAt).toISOString(),
-        changefreq: 'weekly',
-        priority: 0.7,
-      })),
-    ];
-
-    console.log('[Sitemap] Total URLs in sitemap:', urls.length);
-
-    const sitemapXml = generateSitemapXml(urls);
-
-    return new NextResponse(sitemapXml, {
+    return new NextResponse(xml, {
       headers: {
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   } catch (error) {
     console.error('[Sitemap] Error:', error);
     return new NextResponse('Error generating sitemap', { status: 500 });
   }
-}
-
-function generateSitemapXml(urls: Array<{ loc: string; lastmod: string; changefreq: string; priority: number }>): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(url => `  <url>
-    <loc>${url.loc}</loc>
-    <lastmod>${url.lastmod}</lastmod>
-    <changefreq>${url.changefreq}</changefreq>
-    <priority>${url.priority}</priority>
-  </url>`).join('\n')}
-</urlset>`;
 }
