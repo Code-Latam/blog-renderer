@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchArticles, getClientById } from '@/lib/api';
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 3600;
 
 export async function GET(
   request: NextRequest,
@@ -9,10 +9,16 @@ export async function GET(
 ) {
   const { clientId } = params;
 
+  console.log('[Sitemap] Starting for clientId:', clientId);
+
   try {
     // Get client info to determine the base URL
     const client = await getClientById(clientId);
+    console.log('[Sitemap] getClientById result:', client ? 'Found' : 'Not found');
+    console.log('[Sitemap] client.blog:', JSON.stringify(client?.blog, null, 2));
+
     if (!client || !client.blog?.enabled) {
+      console.log('[Sitemap] Client not found or blog not enabled');
       return new NextResponse('Client not found', { status: 404 });
     }
 
@@ -20,25 +26,28 @@ export async function GET(
     let baseUrl: string;
     if (client.blog?.ssrCustomDomain) {
       baseUrl = `https://${client.blog.ssrCustomDomain}`;
+      console.log('[Sitemap] Using ssrCustomDomain:', baseUrl);
     } else if (client.blog?.ssrSubdomain) {
       baseUrl = `https://${client.blog.ssrSubdomain}.meetingmaker.tech`;
+      console.log('[Sitemap] Using ssrSubdomain:', baseUrl);
     } else {
+      console.log('[Sitemap] No base URL configured');
       return new NextResponse('Blog URL not configured', { status: 400 });
     }
 
     // Fetch all published articles for this client
     const { articles, total } = await fetchArticles(clientId, 1, 1000);
+    console.log('[Sitemap] Articles fetched:', articles.length);
+    console.log('[Sitemap] Total articles:', total);
 
     // Build the sitemap XML
     const urls = [
-      // Blog homepage
       {
         loc: baseUrl,
         lastmod: new Date().toISOString(),
         changefreq: 'daily',
         priority: 1.0,
       },
-      // All articles
       ...articles.map((article: any) => ({
         loc: `${baseUrl}/${article.slug}`,
         lastmod: new Date(article.updatedAt || article.publishedAt).toISOString(),
@@ -46,6 +55,8 @@ export async function GET(
         priority: 0.7,
       })),
     ];
+
+    console.log('[Sitemap] Total URLs in sitemap:', urls.length);
 
     const sitemapXml = generateSitemapXml(urls);
 
@@ -56,7 +67,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    console.error('[Sitemap] Error:', error);
     return new NextResponse('Error generating sitemap', { status: 500 });
   }
 }
