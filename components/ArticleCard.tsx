@@ -46,6 +46,9 @@ export function ArticleCard({ article, clientId, layout }: ArticleCardProps) {
       {article.featuredImage && (
         <div className="mm-post-image">
           <img src={article.featuredImage} alt={article.title} loading="lazy" />
+          {article.featuredImageAttribution && (
+              <div className="mm-image-attribution" dangerouslySetInnerHTML={{ __html: article.featuredImageAttribution }} />
+            )}
         </div>
       )}
       <div className="mm-post-content">

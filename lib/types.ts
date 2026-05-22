@@ -5,6 +5,7 @@ export interface Article {
   content: string;
   excerpt: string;
   featuredImage: string | null;
+  featuredImageAttribution: string | null;
   publishedAt: string;
   readTime: number;
   seo?: {
