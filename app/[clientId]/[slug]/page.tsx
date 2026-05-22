@@ -5,7 +5,6 @@ import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-
 export const revalidate = 60;
 
 interface PageProps {
@@ -39,17 +38,30 @@ export default async function ArticlePage({ params }: PageProps) {
           </Link>
           
           {article.featuredImage && (
-            <img
-              src={article.featuredImage}
-              alt={article.title}
-              style={{ 
-                width: '100%', 
-                maxHeight: '400px', 
-                objectFit: 'cover', 
-                borderRadius: '8px', 
-                marginBottom: '1rem' 
-              }}
-            />
+            <figure style={{ margin: 0 }}>
+              <img
+                src={article.featuredImage}
+                alt={article.title}
+                style={{ 
+                  width: '100%', 
+                  maxHeight: '400px', 
+                  objectFit: 'cover', 
+                  borderRadius: '8px', 
+                  marginBottom: '0.5rem' 
+                }}
+              />
+              {article.featuredImageAttribution && (
+                <figcaption 
+                  style={{ 
+                    fontSize: '0.75rem', 
+                    color: '#666', 
+                    textAlign: 'right',
+                    marginBottom: '1rem'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: article.featuredImageAttribution }}
+                />
+              )}
+            </figure>
           )}
           
           <h1>{article.title}</h1>
