@@ -103,14 +103,6 @@ export default async function ArticlePage({ params }: PageProps) {
                       cursor: 'pointer',
                       height: '100%',
                       backgroundColor: '#fff'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#0070f3';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#eaeaea';
-                      e.currentTarget.style.boxShadow = 'none';
                     }}>
                       {relatedArticle.featuredImage && (
                         <img 
