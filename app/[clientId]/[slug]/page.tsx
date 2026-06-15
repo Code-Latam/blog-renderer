@@ -1,4 +1,4 @@
-import { fetchArticle } from '@/lib/api';
+import { fetchArticle, fetchRandomArticles } from '@/lib/api';
 import { BlogLayout } from '@/components/BlogLayout';
 import { ArticleContent } from '@/components/ArticleContent';
 import { SEO } from '@/components/SEO';
@@ -21,6 +21,9 @@ export default async function ArticlePage({ params }: PageProps) {
   if (!article) {
     notFound();
   }
+
+  // Fetch 10 random related articles (excluding current one)
+  const relatedArticles = await fetchRandomArticles(clientId, slug, 10);
 
   const publishedDate = new Date(article.publishedAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -72,6 +75,90 @@ export default async function ArticlePage({ params }: PageProps) {
           </div>
           
           <ArticleContent content={article.content} />
+          
+          {/* Related Articles Section */}
+          {relatedArticles.length > 0 && (
+            <div style={{ 
+              marginTop: '3rem', 
+              borderTop: '1px solid #eaeaea', 
+              paddingTop: '2rem' 
+            }}>
+              <h3 style={{ marginBottom: '1.5rem' }}>Related Articles</h3>
+              <div style={{ 
+                display: 'grid', 
+                gap: '1.5rem',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+              }}>
+                {relatedArticles.map((relatedArticle) => (
+                  <Link 
+                    key={relatedArticle.slug} 
+                    href={`/${clientId}/${relatedArticle.slug}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <div style={{ 
+                      padding: '1rem', 
+                      border: '1px solid #eaeaea', 
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      height: '100%',
+                      backgroundColor: '#fff'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#0070f3';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#eaeaea';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}>
+                      {relatedArticle.featuredImage && (
+                        <img 
+                          src={relatedArticle.featuredImage} 
+                          alt={relatedArticle.title}
+                          style={{
+                            width: '100%',
+                            height: '160px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            marginBottom: '0.75rem'
+                          }}
+                        />
+                      )}
+                      <h4 style={{ 
+                        margin: '0 0 0.5rem 0', 
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        lineHeight: '1.4'
+                      }}>
+                        {relatedArticle.title}
+                      </h4>
+                      {relatedArticle.excerpt && (
+                        <p style={{ 
+                          margin: 0, 
+                          color: '#666', 
+                          fontSize: '0.875rem',
+                          lineHeight: '1.5'
+                        }}>
+                          {relatedArticle.excerpt.length > 120 
+                            ? relatedArticle.excerpt.substring(0, 120) + '...' 
+                            : relatedArticle.excerpt}
+                        </p>
+                      )}
+                      <div style={{ 
+                        marginTop: '0.75rem', 
+                        fontSize: '0.875rem', 
+                        color: '#0070f3',
+                        fontWeight: '500'
+                      }}>
+                        Read more →
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </BlogLayout>
     </>

@@ -97,3 +97,28 @@ export async function fetchArticle(clientId: string, slug: string): Promise<Arti
     return null;
   }
 }
+
+export async function fetchRandomArticles(
+  clientId: string, 
+  excludeSlug: string, 
+  limit: number = 10
+): Promise<Article[]> {
+  try {
+    const url = `${API_BASE}/blog/ssr/articles?clientId=${clientId}&random=true&excludeSlug=${excludeSlug}&limit=${limit}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Service-API-Key': SERVICE_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 60 } // Cache for 60 seconds like other fetches
+    });
+
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.articles || [];
+  } catch (error) {
+    console.error(`Failed to fetch random articles:`, error);
+    return [];
+  }
+}
