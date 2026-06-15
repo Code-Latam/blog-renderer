@@ -47,7 +47,7 @@ export async function getClientById(clientId: string): Promise<any | null> {
   }
 }
 
-export async function fetchArticles(clientId: string, page: number = 1, limit: number = 10): Promise<ApiResponse> {
+export async function fetchArticles(clientId: string, page: number = 1, limit: number = 20): Promise<ApiResponse> {
   try {
     const url = `${API_BASE}/blog/ssr/articles?clientId=${clientId}&page=${page}&limit=${limit}`;
     console.log('[fetchArticles] URL:', url);
