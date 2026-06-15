@@ -1,11 +1,11 @@
-import { fetchArticles } from '@/lib/api';
+import { fetchArticles, getClientById } from '@/lib/api';
 import { ArticleCard } from '@/components/ArticleCard';
 import { BlogLayout } from '@/components/BlogLayout';
-import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
 export const revalidate = 60;
-export const dynamic = 'force-dynamic'; // ✅ Add this to force server-side rendering
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: {
@@ -16,15 +16,31 @@ interface PageProps {
   };
 }
 
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { clientId } = params;
+  
+  try {
+    const client = await getClientById(clientId);
+    
+    return {
+      title: client?.blog?.title || 'Blog',
+      description: `Read articles from ${client?.name || 'our blog'}`,
+    };
+  } catch (error) {
+    return {
+      title: 'Blog',
+      description: 'Read our latest articles',
+    };
+  }
+}
+
 export default async function BlogHome({ params, searchParams }: PageProps) {
   const clientId = params.clientId;
   const page = parseInt(searchParams.page || '1');
 
- // ✅ Add console logs (these will appear in Vercel function logs)
   console.log('[BlogHome] Starting render for clientId:', clientId);
   console.log('[BlogHome] API_BASE_URL:', process.env.API_BASE_URL);
   console.log('[BlogHome] SERVICE_API_KEY exists:', !!process.env.SERVICE_API_KEY);
-
 
   const { articles, pagination, settings } = await fetchArticles(clientId, page);
 
@@ -37,7 +53,6 @@ export default async function BlogHome({ params, searchParams }: PageProps) {
 
   return (
     <>
-      <SEO blogTitle={settings.title} clientId={clientId} isHomepage={true} />
       <BlogLayout blogTitle={settings.title} clientId={clientId}>
         {articles.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>

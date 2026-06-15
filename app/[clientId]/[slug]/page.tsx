@@ -1,9 +1,9 @@
 import { fetchArticle, fetchRandomArticles } from '@/lib/api';
 import { BlogLayout } from '@/components/BlogLayout';
 import { ArticleContent } from '@/components/ArticleContent';
-import { SEO } from '@/components/SEO';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Metadata } from 'next';
 
 export const revalidate = 60;
 
@@ -11,6 +11,35 @@ interface PageProps {
   params: {
     clientId: string;
     slug: string;
+  };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { clientId, slug } = params;
+  const article = await fetchArticle(clientId, slug);
+  
+  if (!article) {
+    return {
+      title: 'Article Not Found',
+    };
+  }
+  
+  return {
+    title: article.title,
+    description: article.excerpt,
+    openGraph: {
+      title: article.title,
+      description: article.excerpt,
+      images: article.featuredImage ? [article.featuredImage] : [],
+      type: 'article',
+      publishedTime: article.publishedAt,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.excerpt,
+      images: article.featuredImage ? [article.featuredImage] : [],
+    },
   };
 }
 
@@ -33,7 +62,6 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <>
-      <SEO article={article} blogTitle={article.title} clientId={clientId} />
       <BlogLayout blogTitle={article.title} clientId={clientId}>
         <div className="mm-article-container">
           <Link href={`/${clientId}`} className="mm-back-button">
