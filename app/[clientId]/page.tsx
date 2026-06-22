@@ -24,12 +24,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     
     return {
       title: client?.blog?.title || 'Blog',
-      description: `Read articles from ${client?.name || 'our blog'}`,
+      description: `Read Startup articles dealing with AI, LinkedIn outreach automation, and sales technology. Learn how to book more sales meetings and grow your business with the latest tools and strategies from ${client?.name}|| 'our blog'}`,
+      alternates: {
+          canonical: `/${clientId}`,  // ← ADD THIS LINE
+        },
     };
   } catch (error) {
     return {
       title: 'Blog',
       description: 'Read our latest articles',
+      alternates: {
+        canonical: `/${clientId}`,  // ← ADD THIS LINE
+      },
     };
   }
 }

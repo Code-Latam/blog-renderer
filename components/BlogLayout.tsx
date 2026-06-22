@@ -13,7 +13,7 @@ export function BlogLayout({ children, blogTitle, clientId }: BlogLayoutProps) {
     <div className="mm-blog-container">
       <header>
         <Link href={`/${clientId}`}>
-          <h1 className="mm-blog-title">{blogTitle}</h1>
+          <h2 className="mm-blog-title">{blogTitle}</h2>
         </Link>
       </header>
       <main>{children}</main>

@@ -40,6 +40,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: article.excerpt,
       images: article.featuredImage ? [article.featuredImage] : [],
     },
+     alternates: {
+      canonical: `/${clientId}/${slug}`,
+      },
   };
 }
 
